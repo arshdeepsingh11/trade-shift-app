@@ -16,7 +16,7 @@ const navItems = [
 
 export default function EmployerDashboard() {
   return (
-    <DashboardLayout logoText="Employer" navItems={navItems}>
+    <DashboardLayout logoText="Employer Panel" navItems={navItems}>
       <Routes>
         <Route path="/" element={<EmployerOverview />} />
         <Route path="sites" element={<Sites />} />

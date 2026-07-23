@@ -21,7 +21,7 @@
 .dashboard-logo {
   font-size: 18px;
   font-weight: 700;
-  color: #33344a;
+  color: #3f4162;
   padding: 0 10px 24px;
 }
 
@@ -50,7 +50,7 @@
 
 .dashboard-nav-link.active {
   background: #eef1f8;
-  color: #33344a;
+  color: #3f4162;
   box-shadow:
     inset 3px 3px 6px rgba(163, 177, 198, 0.4),
     inset -3px -3px 6px rgba(255, 255, 255, 0.8);
@@ -70,7 +70,7 @@
 
 .dashboard-user strong {
   display: block;
-  color: #33344a;
+  color: #3f4162;
   font-size: 14px;
 }
 
@@ -105,7 +105,7 @@
 .dashboard-title {
   font-size: 24px;
   font-weight: 700;
-  color: #33344a;
+  color: #3f4162;
   margin: 0 0 4px;
 }
 
@@ -186,7 +186,7 @@
   border: none;
   border-radius: 14px;
   background: #eef1f8;
-  color: #33344a;
+  color: #3f4162;
   box-shadow:
     inset 4px 4px 8px rgba(163, 177, 198, 0.45),
     inset -4px -4px 8px rgba(255, 255, 255, 0.8);
@@ -220,7 +220,7 @@
   background: linear-gradient(135deg, rgba(127, 119, 221, 0.12), rgba(83, 74, 183, 0.08));
   border: 1px solid rgba(127, 119, 221, 0.25);
   font-size: 14px;
-  color: #33344a;
+  color: #3f4162;
 }
 
 .invite-code-value {
@@ -246,7 +246,7 @@
 .list-row-title {
   font-size: 14px;
   font-weight: 600;
-  color: #33344a;
+  color: #3f4162;
 }
 
 .list-row-subtitle {
@@ -272,4 +272,10 @@
 .status-pill.active {
   background: rgba(74, 200, 130, 0.15);
   color: #2d8a4f;
+}
+.dashboard-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #3f4162;
+  padding: 0 10px 24px;
 }
