@@ -31,6 +31,7 @@ export interface Employee {
   user_id: string;
   employer_id: string;
   pay_rate: number;
+  active: boolean;
   created_at: string;
 }
 

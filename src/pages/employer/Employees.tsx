@@ -5,6 +5,7 @@ import { useEmployer } from '../../hooks/useEmployer';
 interface EmployeeRow {
   id: string;
   pay_rate: number;
+  active: boolean;
   users: { full_name: string; email: string } | null;
 }
 
@@ -28,13 +29,14 @@ export default function Employees() {
   const [employees, setEmployees] = useState<EmployeeRow[]>([]);
   const [invites, setInvites] = useState<InviteRow[]>([]);
   const [listLoading, setListLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   async function loadData(employerId: string) {
     setListLoading(true);
 
     const { data: employeeData } = await supabase
       .from('employees')
-      .select('id, pay_rate, users(full_name, email)')
+      .select('id, pay_rate, active, users(full_name, email)')
       .eq('employer_id', employerId);
 
     const { data: inviteData } = await supabase
@@ -69,11 +71,29 @@ export default function Employees() {
       return;
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const alreadyEmployee = employees.some(
+      (emp) => emp.users?.email?.toLowerCase() === normalizedEmail
+    );
+    if (alreadyEmployee) {
+      setError('This person is already on your team.');
+      return;
+    }
+
+    const alreadyInvited = invites.some(
+      (inv) => inv.email.toLowerCase() === normalizedEmail
+    );
+    if (alreadyInvited) {
+      setError('An invite has already been sent to this email and is still pending.');
+      return;
+    }
+
     setSubmitting(true);
 
     const { data, error: insertError } = await supabase
       .from('employee_invites')
-      .insert({ employer_id: employer.id, email, pay_rate: rate })
+      .insert({ employer_id: employer.id, email: normalizedEmail, pay_rate: rate })
       .select('invite_code')
       .single();
 
@@ -90,6 +110,36 @@ export default function Employees() {
     loadData(employer.id);
   }
 
+  async function handleCancelInvite(inviteId: string) {
+    setBusyId(inviteId);
+    const { error: deleteError } = await supabase
+      .from('employee_invites')
+      .delete()
+      .eq('id', inviteId);
+    setBusyId(null);
+
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
+    }
+    if (employer) loadData(employer.id);
+  }
+
+  async function handleToggleActive(employeeId: string, currentActive: boolean) {
+    setBusyId(employeeId);
+    const { error: updateError } = await supabase
+      .from('employees')
+      .update({ active: !currentActive })
+      .eq('id', employeeId);
+    setBusyId(null);
+
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+    if (employer) loadData(employer.id);
+  }
+
   if (employerLoading) return null;
 
   return (
@@ -100,7 +150,7 @@ export default function Employees() {
       </div>
 
       <div className="dashboard-card">
-        <h3 style={{ marginTop: 0, color: '#33344a' }}>Invite an employee</h3>
+        <h3 style={{ marginTop: 0, color: '#3f4162' }}>Invite an employee</h3>
         <form onSubmit={handleInvite}>
           <div className="dashboard-field">
             <label>Employee email</label>
@@ -142,7 +192,7 @@ export default function Employees() {
       </div>
 
       <div className="dashboard-card">
-        <h3 style={{ marginTop: 0, color: '#33344a' }}>Your team</h3>
+        <h3 style={{ marginTop: 0, color: '#3f4162' }}>Your team</h3>
         {listLoading ? (
           <div className="dashboard-empty">Loading...</div>
         ) : employees.length === 0 && invites.length === 0 ? (
@@ -157,7 +207,25 @@ export default function Employees() {
                     {emp.users?.email} — ${emp.pay_rate}/hr
                   </div>
                 </div>
-                <span className="status-pill active">Active</span>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <span className={`status-pill ${emp.active ? 'active' : 'pending'}`}>
+                    {emp.active ? 'Active' : 'Ex'}
+                  </span>
+                  <button
+                    className="dashboard-button"
+                    style={{
+                      padding: '6px 14px',
+                      fontSize: 12,
+                      background: emp.active
+                        ? 'linear-gradient(135deg, #e26b6b, #b53d3d)'
+                        : 'linear-gradient(135deg, #7f77dd, #534ab7)',
+                    }}
+                    disabled={busyId === emp.id}
+                    onClick={() => handleToggleActive(emp.id, emp.active)}
+                  >
+                    {emp.active ? 'Move to Ex' : 'Reactivate'}
+                  </button>
+                </div>
               </div>
             ))}
 
@@ -169,7 +237,17 @@ export default function Employees() {
                     ${inv.pay_rate}/hr — code: {inv.invite_code}
                   </div>
                 </div>
-                <span className="status-pill pending">Pending</span>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <span className="status-pill pending">Pending</span>
+                  <button
+                    className="dashboard-button"
+                    style={{ padding: '6px 14px', fontSize: 12, background: 'linear-gradient(135deg, #e26b6b, #b53d3d)' }}
+                    disabled={busyId === inv.id}
+                    onClick={() => handleCancelInvite(inv.id)}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             ))}
           </>
